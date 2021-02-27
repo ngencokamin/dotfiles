@@ -1,0 +1,42 @@
+swipe:
+  3:
+    left:
+      command: 'xdotool key alt+Right' # History forward
+    right:
+      command: 'xdotool key alt+Left' # History back
+    up:
+      command: 'xdotool key ctrl+t' # Open new tab
+      keypress:
+        LEFTSHIFT:
+          command: 'xdotool key --clearmodifiers ctrl+shift+t' # Open last closed tab
+    down:
+      command: 'xdotool key ctrl+w' # Close tab
+
+  4:
+    left:
+      command: 'xdotool key ctrl+alt+Right' #Go right a desktop
+    right:
+      command: 'xdotool key ctrl+alt+Left' #Go left a desktop
+    up:
+      command: 'xdotool key ctrl+F8' #Show apps on desktop
+    down:
+      command: 'xdotool key ctrl+F9' #Show desktops
+pinch:
+  2:
+    in:
+      command: 'xdotool keydown ctrl click 4 keyup ctrl' # Zoom in
+    out:
+      command: 'xdotool keydown ctrl click 5 keyup ctrl' # Zoom out
+  4:
+    in:
+      command: 'xdotool key super+a' # Window overview
+    out:
+      command: 'xdotool key super+s' # Workspace overview
+
+
+threshold:
+    pinch: 0.3 
+
+
+interval:
+    pinch: 0.8
