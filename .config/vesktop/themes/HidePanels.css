@@ -1,0 +1,20 @@
+div[class^="sidebarList_"]:not(:hover) {
+    width:10px !important;
+}
+
+div[class^="sidebarList_"] {
+    transition: width 0.2s linear;
+}
+
+div[class^="membersWrap_"]:not(:hover) {
+    min-width: 15px !important;
+}
+
+div[class^="membersWrap_"]:not(:hover) >  div[class^="members_"] {
+    width: 15px !important;
+    background-color: transparent !important;
+}
+
+div[class^="members_"], div[class^="membersWrap_"] {
+    transition: width 0.2s linear, min-width 0.2s linear;
+}

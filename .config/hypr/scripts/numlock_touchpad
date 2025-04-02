@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# # Set device to be toggled
+# HYPRLAND_DEVICE="asuf1416:00-2808:0108-touchpad"
+HYPRLAND_VARIABLE="device[asuf1416:00-2808:0108-touchpad]:enabled"
+
+if [ -z "$XDG_RUNTIME_DIR" ]; then
+  export XDG_RUNTIME_DIR=/run/user/$(id -u)
+fi
+
+export STATUS_FILE="$XDG_RUNTIME_DIR/touchpad.status"
+
+# Check if device is currently enabled (1 = enabled, 0 = disabled)
+# DEVICE="$(hyprctl getoption $HYPRLAND_VARIABLE | grep 'int: 1')"
+
+
+disable_touchpad() {
+	notify-send -u normal "Disabling Touchpad"
+	hyprctl keyword $HYPRLAND_VARIABLE false
+}
+
+enable_touchpad() {
+	notify-send -u normal "Enabling Touchpad"
+	hyprctl keyword $HYPRLAND_VARIABLE true
+}
+
+if ! [ -f "$STATUS_FILE" ]; then
+  disable_touchpad
+  echo "enabled" > $STATUS_FILE
+else
+  if [ $(cat "$STATUS_FILE") = "enabled" ]; then
+    disable_touchpad
+    echo "disabled" > $STATUS_FILE
+  elif [ $(cat "$STATUS_FILE") = "disabled" ]; then
+    enable_touchpad
+    echo "enabled" > $STATUS_FILE
+  fi
+fi

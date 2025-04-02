@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Define the array with the specified entries
+pass_chars=(
+    "abcdefghijklmnopqrstuvwxyz"            # lowercase alphabet
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"          # uppercase alphabet
+    "0123456789"                          # numbers
+    "!\"#$%&'()*+,-./:;<=>?@[\\]^_\`{|}~"  # punctuation/special characters
+)
+
+if [[ $# -eq 0 ]] ; then
+    len=15  
+elif ! [[ "$1" =~ ^[0-9]+$ ]] || (("$1" < 1 || "$1" > 20)) ; then
+    echo "Error! Argument must be an integer between 1-20!" >&2; exit 1
+else
+    len="$1"
+fi
+
+pass=''
+
+for i in $(seq 1 $len) ; do
+    char_type="${pass_chars[$RANDOM % 4]}"
+    char_type_len="${#char_type}"
+    char_index="$((RANDOM % $char_type_len))"
+    pass="${pass}${char_type:char_index:1}"
+done
+
+
+echo 'Your password is' "$pass"
+echo "$pass" | wl-copy  
