@@ -1,80 +1,45 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-outputDir="$HOME/Videos/Screencasts"
-
-checkRecording() {
-    if pgrep -f "gpu-screen-recorder" >/dev/null; then
-        return 0
-    else
-        return 1
-    fi
+wf-recorder_check() {
+	if pgrep -x "wf-recorder" > /dev/null; then
+		notify-send "Stopping active recording"
+		pkill -INT -x wf-recorder
+		exit 0
+	fi
 }
 
-startRecording() {
-    if checkRecording; then
-        echo "A recording is already in progress."
-        exit 1
-    fi
+wf-recorder_check
 
-    target="$2"
-
-    outputFile="recording_$(date +%Y-%m-%d_%H-%M-%S).mp4"
-    outputPath="$outputDir/$outputFile"
-    mkdir -p "$outputDir"
-
-    if [ -z "$target" ]; then
-        echo "Usage: $0 start screen [screen_name]"
-        exit 1
-    fi
-
-    GPU_TYPE=$(lspci | grep -E 'VGA|3D' | grep -Ev '00:02.0|Integrated' >/dev/null && echo "" || echo "-encoder cpu")
-
-    gpu-screen-recorder \
-        -w "$target" \
-        -f 60 \
-        -k h264 \
-        -a "$(pactl get-default-sink).monitor" \
-        -o "$outputPath" \
-        $GPU_TYPE &
-
-    echo "Recording started. Output will be saved to $outputPath"
+check_screencast_dir() {
+	if [ ! -d "$HOME/Videos/Screencasts" ]; then
+		mkdir -p "$HOME/Videos/Screencasts"
+	fi
 }
 
-stopRecording() {
-    if ! checkRecording; then
-        echo "No recording is in progress."
-        exit 1
-    fi
-
-    pkill -SIGINT -f gpu-screen-recorder
-
-    recentFile=$(ls -t "$outputDir"/recording_*.mp4 | head -n 1)
-
-    notify-send "Recording stopped" "Your recording has been saved." \
-        -i video-x-generic \
-        -a "Screen Recorder" \
-        -t 10000 \
-        -u normal \
-        --action="scriptAction:-xdg-open $outputDir=Directory" \
-        --action="scriptAction:-xdg-open $recentFile=Play"
+active() {
+	if command -v hyprctl &>/dev/null; then
+		hyprctl -k activewindow | \
+			jq -r '"\(.at[0]),\(.at[1]) \(.size[0])x\(.size[1])"'
+	elif command -v swaymsg &>/dev/null; then
+		swaymsg -t get_tree | \
+			jq -r '.. | select(.focused?) | .rect | "\(.x),\(.y) \(.width)x\(.height)"'
+	else
+		notify-send "Error! Could not get active window!"
+		exit 0
+	fi
 }
+
+set -eEuo pipefail
+
+outPath="$HOME/Videos/Screencasts/$(date +%m-%d-%Y_%H-%m-%s).mp4"
 
 case "$1" in
-start)
-    startRecording "$@"
-    ;;
-stop)
-    stopRecording
-    ;;
-status)
-    if checkRecording; then
-        echo "recording"
-    else
-        echo "not recording"
-    fi
-    ;;
-*)
-    echo "Usage: $0 {start [screen_name|window_id]|stop|status}"
-    exit 1
-    ;;
+	'active') notify-send "Starting active window recording" && wf-recorder -g "$(active)" -f "$outPath";;
+	'area') notify-send "Starting area recording" && wf-recorder -g "$(slurp)" -f "$outPath";;
+	'output') notify-send "Starting screen recording" && wf-recorder -f "$outPath";;
+	*) notify-send "Error! Recording type not specified!" && exit 0;;
 esac
+
+
+notify-send "Recording saved to" "$outPath"
+mpv "$outPath"
