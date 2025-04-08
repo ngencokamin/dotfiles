@@ -1,2 +1,6 @@
 [General]
 theme=catppuccin-frappe-lavender
+
+[Applications]
+Default=albert
+catppuccin-frappe-lavender=albert, Albert
